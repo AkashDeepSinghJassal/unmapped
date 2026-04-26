@@ -1,0 +1,50 @@
+country_code: IND
+country_name: India
+region: South Asia
+context: Mixed formal/informal economy with large services, IT, and manufacturing sectors
+
+languages:
+  - hi   # Hindi
+  - en
+
+labor_market:
+  ilostat_country_code: IND
+  wb_country_code: in
+  wage_indicator: median_monthly_wage_local
+  sector_focus:
+    - ICT and Software
+    - Agriculture
+    - Manufacturing
+    - Construction
+    - Trade
+    - Healthcare
+
+education:
+  taxonomy: ISCED
+  levels:
+    - code: ISCED1
+      label: Primary school
+    - code: ISCED2
+      label: Middle school (Class 8)
+    - code: ISCED3
+      label: Senior high school (SHS) / Secondary
+    - code: ISCED4
+      label: TVET / Vocational certificate
+    - code: ISCED6
+      label: Bachelor degree or above
+    - code: ISCED0
+      label: No formal education
+
+automation_calibration:
+  # India: large informal sector, fast-growing digital economy
+  digital_adjustment_factor: 0.72
+  itu_internet_penetration_pct: 69   # ITU 2024 estimate
+
+opportunity_modes:
+  - formal_job
+  - self_employment
+  - gig
+  - training
+
+currency: INR
+currency_symbol: "₹"

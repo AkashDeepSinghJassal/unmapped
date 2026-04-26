@@ -284,9 +284,29 @@ def load_data360(
         return
 
     df = pd.DataFrame(rows)
-    db.execute("CREATE OR REPLACE TABLE data360_indicators AS SELECT * FROM df")
-    logger.info("Loaded data360_indicators: %d rows, %d countries, %d indicators",
-                len(df), df["country_code"].nunique(), df["indicator_id"].nunique())
+
+    # Create table if it doesn't exist, otherwise delete old rows for the
+    # affected countries and re-insert — preserves data for other countries.
+    existing = db.execute(
+        "SELECT count(*) FROM information_schema.tables WHERE table_name='data360_indicators'"
+    ).fetchone()[0]
+
+    if existing:
+        affected = df["country_code"].unique().tolist()
+        placeholders = ", ".join("?" * len(affected))
+        db.execute(
+            f"DELETE FROM data360_indicators WHERE country_code IN ({placeholders})",
+            affected,
+        )
+        db.execute("INSERT INTO data360_indicators SELECT * FROM df")
+    else:
+        db.execute("CREATE TABLE data360_indicators AS SELECT * FROM df")
+
+    total_rows = db.execute("SELECT count(*) FROM data360_indicators").fetchone()[0]
+    logger.info(
+        "Loaded data360_indicators: %d new rows (table total: %d), %d indicators",
+        len(df), total_rows, df["indicator_id"].nunique(),
+    )
 
     # Convenience view: latest value per indicator per country
     db.execute("""

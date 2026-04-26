@@ -27,19 +27,19 @@ export default function RootLayout({
                 Skills Infrastructure
               </span>
             </Link>
-            <nav className="flex gap-6 text-sm text-gray-400">
-              <Link href="/" className="hover:text-white transition-colors">
-                Youth
-              </Link>
-              <Link href="/chat" className="hover:text-white transition-colors flex items-center gap-1">
+            <nav className="flex gap-5 text-sm text-gray-400 items-center">
+              <Link href="/chat" className="hover:text-white transition-colors flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 Chat
               </Link>
-              <Link
-                href="/dashboard"
-                className="hover:text-white transition-colors"
-              >
-                Policymaker
+              <Link href="/start" className="hover:text-white transition-colors">
+                Quick Form
+              </Link>
+              <Link href="/talent" className="hover:text-white transition-colors">
+                Talent
+              </Link>
+              <Link href="/dashboard" className="hover:text-white transition-colors px-3 py-1.5 bg-purple-500/10 border border-purple-500/30 rounded-lg text-purple-400 hover:bg-purple-500/20">
+                Policy
               </Link>
             </nav>
           </div>

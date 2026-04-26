@@ -31,16 +31,16 @@ def run_all(skip_esco: bool = False, countries: list[str] | None = None):
     from . import fetch_worldbank, fetch_data360, load_frey_osborne, embed_esco
 
     db = get_db()
-    # logger.info("=== Starting data ingestion pipeline ===")
+    logger.info("=== Starting data ingestion pipeline ===")
 
-    # logger.info("--- Data360 labour + HCI + digital + youth signals ---")
-    # fetch_data360.run(db, countries=countries)
+    logger.info("--- Data360 labour + HCI + digital + youth signals ---")
+    fetch_data360.run(db, countries=countries)
 
-    # logger.info("--- World Bank WDI indicators (legacy fallback) ---")
-    # fetch_worldbank.run(db, countries=countries)
+    logger.info("--- World Bank WDI indicators (legacy fallback) ---")
+    fetch_worldbank.run(db, countries=countries)
 
-    # logger.info("--- Frey-Osborne automation risk ---")
-    # load_frey_osborne.run(db)
+    logger.info("--- Frey-Osborne automation risk ---")
+    load_frey_osborne.run(db)
 
     if not skip_esco:
         logger.info("--- ESCO skills embedding ---")

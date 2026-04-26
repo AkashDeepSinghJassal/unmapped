@@ -186,7 +186,7 @@ function BotMessage({ msg }: { msg: Message }) {
             <OpportunitiesCard opportunities={msg.analysis.opportunities} />
             <div className="mt-3 flex gap-2">
               <a
-                href={`/results?profile_id=${msg.analysis.profile_id}`}
+                href={`/talent?profile_id=${msg.analysis.profile_id}`}
                 className="text-xs bg-blue-600 hover:bg-blue-500 text-white rounded-lg px-3 py-1.5 transition-colors"
               >
                 View full results →
@@ -388,7 +388,7 @@ export default function ChatPage() {
               Start over
             </button>
             <button
-              onClick={() => router.push("/results")}
+              onClick={() => router.push("/talent")}
               className="px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-medium transition-colors whitespace-nowrap"
             >
               Full results →

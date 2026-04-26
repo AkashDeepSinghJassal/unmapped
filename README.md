@@ -17,7 +17,6 @@ User (Web) → Next.js Frontend → FastAPI → LangGraph Orchestrator
 **AI model:** Gemini 2.0 Flash + Gemini Embedding 2 (Google Gen AI SDK)
 
 **Data sources:**
-- [ILOSTAT Bulk Download](https://rplumber.ilo.org/files/website/bulk/) — wages, employment by sector
 - [World Bank WDI API](https://api.worldbank.org/v2/) — HCI, GDP per worker, sector employment %
 - [Frey-Osborne (2013)](https://raw.githubusercontent.com/plotly/datasets/master/job-automation-probability.csv) — automation probability by occupation
 - [ESCO v1.2.1](https://esco.ec.europa.eu/en/use-esco/download) — skills taxonomy (13k skills)

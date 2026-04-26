@@ -15,7 +15,7 @@ import uuid
 from typing import Optional
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -218,6 +218,40 @@ def chat_message(req: ChatMessageRequest):
         )
 
 
+@app.post("/api/parse-cv")
+async def parse_cv_endpoint(file: UploadFile = File(...)):
+    """
+    Upload a CV (PDF / DOCX / TXT) and extract education_level + experience_text.
+    Uses the configured LLM provider.
+    """
+    from backend.services.cv_parser import extract_text_from_file, parse_cv
+
+    ALLOWED_TYPES = {
+        "application/pdf",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/msword",
+        "text/plain",
+    }
+    MAX_SIZE_MB = 5
+
+    content = await file.read()
+    if len(content) > MAX_SIZE_MB * 1024 * 1024:
+        raise HTTPException(413, f"File too large (max {MAX_SIZE_MB} MB)")
+
+    filename = file.filename or "upload.txt"
+    cv_text  = extract_text_from_file(content, filename)
+    if not cv_text:
+        raise HTTPException(422, "Could not extract text from CV. Supported: PDF, DOCX, TXT")
+
+    result = parse_cv(cv_text)
+    return {
+        "education_level":  result.get("education_level", ""),
+        "experience_text":  result.get("experience_text", ""),
+        "chars_extracted":  len(cv_text),
+        "filename":         filename,
+    }
+
+
 @app.delete("/api/chat/{session_id}")
 def reset_chat(session_id: str):
     """Clear conversation history for a session (start over)."""
@@ -234,9 +268,11 @@ def trigger_ingestion(req: IngestRequest, background_tasks: BackgroundTasks):
     """
     def _run_ingestion():
         from backend.ingestion import run_all, get_db
-        from backend.ingestion import fetch_worldbank
+        from backend.ingestion import fetch_worldbank, fetch_data360
         db = get_db()
         if req.countries:
+            logger.info("Ingesting Data360 + WDI for countries: %s", req.countries)
+            fetch_data360.run(db, countries=req.countries)
             fetch_worldbank.run(db, countries=req.countries)
         else:
             run_all(skip_esco=req.skip_esco)
@@ -244,6 +280,25 @@ def trigger_ingestion(req: IngestRequest, background_tasks: BackgroundTasks):
 
     background_tasks.add_task(_run_ingestion)
     return {"status": "ingestion started", "skip_esco": req.skip_esco}
+
+
+@app.get("/api/signals")
+def get_signals(country_code: str = "GHA"):
+    """
+    Return all Data360 indicator signals for a country as a flat dict.
+    Used by the Regional Compare tab.
+    Schema: { indicator_label: { value, year, description, category } }
+    """
+    from backend.ingestion import get_db
+    from backend.ingestion.fetch_data360 import get_country_signals
+
+    db = get_db()
+    try:
+        signals = get_country_signals(country_code.upper(), db)
+    finally:
+        pass  # connection is shared/cached — don't close
+
+    return {"country_code": country_code.upper(), "signals": signals}
 
 
 @app.get("/api/configs")

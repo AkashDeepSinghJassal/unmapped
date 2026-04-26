@@ -145,3 +145,41 @@ export async function sendChatMessage(req: ChatRequest): Promise<ChatResponse> {
 export async function resetChat(sessionId: string): Promise<void> {
   await fetch(`${API_BASE}/api/chat/${sessionId}`, { method: "DELETE" });
 }
+
+// ── Signals (Regional Compare) ───────────────────────────────────────────────
+
+export interface SignalValue {
+  value: number | null;
+  year?: number;
+  description?: string;
+  category?: string;
+}
+
+export async function getSignals(
+  countryCode: string
+): Promise<Record<string, SignalValue>> {
+  const res = await fetch(`${API_BASE}/api/signals?country_code=${countryCode}`);
+  if (!res.ok) throw new Error(`Signals API error: ${res.status}`);
+  const data = await res.json();
+  return data.signals ?? {};
+}
+
+// ── CV Parser ─────────────────────────────────────────────────────────────────
+
+export interface CvParseResult {
+  education_level: string;
+  experience_text: string;
+  chars_extracted: number;
+  filename: string;
+}
+
+export async function parseCv(file: File): Promise<CvParseResult> {
+  const form = new FormData();
+  form.append("file", file);
+  const res = await fetch(`${API_BASE}/api/parse-cv`, { method: "POST", body: form });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail ?? `API error: ${res.status}`);
+  }
+  return res.json();
+}
