@@ -1,23 +1,31 @@
-# Environment
+# ── Secrets ───────────────────────────────────────────────────────────────────
 .env
+
+# ── Python runtime ────────────────────────────────────────────────────────────
 venv/
 __pycache__/
 *.pyc
 *.pyo
+*.pyd
 .python-version
+*.egg-info/
+dist/
+build/
+.pytest_cache/
 
-# Data (large files — regenerate with python run.py ingest)
-data/unmapped.duckdb
-data/chroma/
-data/skills_en.csv
+# ── Data — committed so the repo runs without re-ingestion ───────────────────
+# To exclude large files and require re-ingestion instead, uncomment:
+# data/chroma/
+# data/*.duckdb
+# data/delta.csv
+# data/skills_en.csv
 
-# Next.js
+# ── Next.js ───────────────────────────────────────────────────────────────────
 frontend/.next/
 frontend/node_modules/
 frontend/.env.local
 
-# Misc
+# ── OS noise ──────────────────────────────────────────────────────────────────
 .DS_Store
-*.egg-info/
-dist/
-build/
+**/.DS_Store
+Thumbs.db
