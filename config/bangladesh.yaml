@@ -1,0 +1,47 @@
+country_code: BGD
+country_name: Bangladesh
+region: South Asia
+context: Rural agricultural and garment sector
+
+languages:
+  - bn   # Bangla
+  - en
+
+labor_market:
+  ilostat_country_code: BGD
+  wb_country_code: bd
+  wage_indicator: median_monthly_wage_local
+  sector_focus:
+    - Textile and Garments
+    - Agriculture
+    - Construction
+    - ICT
+    - Trade
+
+education:
+  taxonomy: ISCED
+  levels:
+    - code: ISCED1
+      label: Primary
+    - code: ISCED2
+      label: Secondary (JSC/JDC)
+    - code: ISCED3
+      label: Higher Secondary (SSC/HSC)
+    - code: ISCED4
+      label: Diploma / Vocational (BTEB)
+    - code: ISCED6
+      label: Bachelor (Honours)
+
+automation_calibration:
+  # Bangladesh garment sector: high routine-task exposure but low wage floor limits automation speed
+  digital_adjustment_factor: 0.55
+  itu_internet_penetration_pct: 44  # ITU 2024 estimate for Bangladesh
+
+opportunity_modes:
+  - formal_job
+  - self_employment
+  - training
+  - gig
+
+currency: BDT
+currency_symbol: "৳"

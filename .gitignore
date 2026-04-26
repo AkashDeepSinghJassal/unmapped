@@ -1,0 +1,23 @@
+# Environment
+.env
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.python-version
+
+# Data (large files — regenerate with python run.py ingest)
+data/unmapped.duckdb
+data/chroma/
+data/skills_en.csv
+
+# Next.js
+frontend/.next/
+frontend/node_modules/
+frontend/.env.local
+
+# Misc
+.DS_Store
+*.egg-info/
+dist/
+build/

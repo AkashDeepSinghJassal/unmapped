@@ -1,0 +1,173 @@
+
+
+
+UNMAPPED
+Closing the distance between real skills and economic opportunity in the age of AI
+
+
+
+
+P O W E R E D   B Y
+
+
+
+
+
+
+The World Bank - Youth Summit
+
+Goals and Motivation
+Meet Amara
+Her name is Amara. She is 22, lives outside Accra, and holds a secondary school certificate. She speaks three languages, has been running a phone repair business since she was 17, and taught herself basic coding from YouTube videos on a shared mobile connection.
+
+By any reasonable measure, Amara has skills. But no employer in her city knows she exists. No training program has assessed what she already knows. No labor market system has a record of her.
+
+To the formal economy, Amara is unmapped. She is not the exception — she is the rule. Hundreds of millions of young people across low- and middle-income countries (LMICs) sit at a broken intersection: education systems that don’t speak the language of labor markets, employers who can’t find talent they can’t credential-check, and an AI disruption that is redrawing the skills landscape faster than any institution can track.
+
+This hackathon asks you to start solving that.
+
+Three Failures. One Challenge.
+No existing tool adequately addresses all three of these structural breakdowns at once:
+
+BROKEN SIGNALS
+Education credentials don’t translate into labor market signals. A secondary school certificate tells an employer almost nothing meaningful. Informal skills are invisible.
+AI DISRUPTION WITHOUT READINESS
+Automation is arriving unevenly. Jobs in routine and manual work — disproportionately held by young LMIC workers — face the highest disruption risk. Youth have no tools to understand or navigate this.
+NO MATCHING INFRASTRUCTURE
+Even where skills and jobs exist in the same place, the connective tissue is absent. Matching happens through informal networks that systematically exclude the most vulnerable youth.
+
+Your Challenge
+Build UNMAPPED — a working prototype of an open, localizable infrastructure layer that closes the distance between a young person’s real skills and real economic opportunity.
+
+Infrastructure, not just an app
+Your tool must work as a layer that any government, NGO, training provider, or employer could plug into and configure with local data — without rebuilding from scratch. Think protocol, not product. Country-specific parameters (labor market data, education taxonomy, language, automation calibration) should be inputs to your system, not hardcoded assumptions.
+
+
+Build at least two of these three modules:
+
+01  Skills Signal Engine
+A youth user, training provider, or community navigator inputs their education level, informal experience, and demonstrated competencies. The system maps these to a standardized, portable skills profile grounded in real taxonomies (ISCO, ESCO, O∗NET or equivalent). Critically: the profile must be human-readable. Amara should be able to understand and own it — not just an AI.
+Required: Profile must be portable across borders & sectors, and explainable to a non-expert user.
+
+
+02  AI Readiness & Displacement Risk Lens
+Given a skills profile and local labor market context, the tool produces an honest readiness assessment: which parts of someone’s work are at automation risk, which skills are durable, and what adjacent skills would increase resilience. This must be calibrated to LMICs — automation risk looks different in Kampala than in Kuala Lumpur. Use the Wittgenstein Centre 2025–2035 education projections to show how the landscape is shifting, not just where it stands today.
+Required: Must incorporate at least one real automation exposure dataset (e.g. Frey-Osborne, ILO task indices, World Bank STEP).
+
+
+03  Opportunity Matching & Econometric Dashboard
+Surface real labor market signals — wage floors, sector employment growth, returns to education by level — and connect a user’s skills profile to realistic, reachable opportunities. This is not aspirational matching (‘you could be a software engineer’). It is honest, grounded matching that accounts for local realities. This module has a dual interface: one for the youth user, one for a policymaker or program officer viewing aggregate signals.
+Required: Must surface at least two real econometric signals visibly to the user — not buried in the algorithm.
+
+
+The Country-Agnostic Requirement
+Your prototype must not be hardcoded to one country. In your demo, show your tool configured for one context (e.g. Sub-Saharan Africa, urban informal economy), then show what it would take to reconfigure for a second context (e.g. South Asia, rural agricultural).
+
+The following must be configurable without changing your codebase:
+
+Labor market data source and structure (wage indices, sector classifications)
+Education level taxonomy and credential mapping
+Language and script of the user interface
+Automation exposure calibration (risk profiles differ by infrastructure context)
+Opportunity types surfaced (formal employment, self-employment, gig, training pathways)
+Data Sources and Hints
+Your tool must be grounded in real economic data — not synthetic proxies. You are required to incorporate and surface at least two econometric signal categories from the sources below.
+
+LABOR MARKET & EMPLOYMENT
+ILO ILOSTAT
+Wage, employment, and labor force participation data by country and sector — the primary real-world labor signal source.
+World Bank WDI
+World Development Indicators covering education, employment, and poverty across LMICs.
+World Bank Human Capital Index
+Learning-adjusted years of schooling — accounts for quality, not just quantity of education.
+ILO ISCO-08
+International standard for occupational classification — the backbone for any skills taxonomy.
+EDUCATION PROJECTIONS
+Wittgenstein Centre
+Education level projections by country, age, and sex to 2035+. Show Amara where her region is heading.
+UN Population Projections
+Age-sex population projections to 2100. Use to calculate skill-population divergence.
+UNESCO Institute for Statistics
+Enrollment rates, completion rates, and gender parity indices by country.
+AUTOMATION & AI READINESS
+Frey & Osborne Automation Scores
+Automation probability scores by occupation — calibrate for LMIC contexts where task composition differs.
+World Bank STEP
+Skills measurement data from LMIC contexts — rare direct evidence of skill levels in developing countries.
+ILO Future of Work Datasets
+Task-content indices (routine vs. non-routine, cognitive vs. manual) by occupation for 40+ countries.
+ITU Digital Development
+Mobile broadband and internet penetration — essential for calibrating digital readiness constraints.
+SKILLS TAXONOMIES
+ESCO Skills Taxonomy (EU)
+Multilingual skills and occupation taxonomy — essential for portable, cross-border skills profiles.
+O*NET (US DOL)
+Detailed occupation task content data, widely adapted for LMIC contexts.
+
+
+What Makes a Strong Submission
+
+Strong Submissions...
+— Show the data. Surface at least 2 econometric signals in a form the user can understand.
+— Design for constraint. Assume low bandwidth, shared devices, incomplete credentials.
+— Demonstrate localizability with real evidence, not just a slide.
+— Be honest about limits. The best teams know exactly what they don’t know.
+Weak Submissions...
+— Build a beautiful dashboard that tells you things you already knew.
+— Serve a generic ‘youth’ user rather than a specific, constrained one.
+— Treat localizability as a slide rather than a design feature.
+— Overengineer the tech stack and under-engineer the user experience.
+
+Why This Matters
+Youth unemployment in low- and middle-income countries represents one of the defining structural failures of our time — with over 600 million young people holding real, unrecognised skills that broken credentialing systems and absent matching infrastructure render economically invisible.
+
+As AI accelerates occupational disruption faster than any institution can absorb, the countries and communities that build open skills infrastructure today will determine whether the coming decade becomes one of shared economic mobility — or one in which the most capable generation in history is also the most structurally excluded.
+
+
+Appendix – additional data sources
+World Bank Enterprise Surveys (WBES, https://login.enterprisesurveys.org/). Please consider using the “combined data” tab to access cross-country harmonized data and indicators on employment, growth rates, productivity indicators, labor costs, firm characteristics, business environment measures across many topics including access to finance, taxes, infrastructure, competition, corruption, management practices, innovations, along with the perception data on constraints to firm’s operations.
+Employment Indicators of the WBES https://www.enterprisesurveys.org/en/employment-indicators.
+Business Ready database
+Data360: Growth & Jobs (Employment trends, by sector).
+Business Ready (B-READY): Indicators on regulatory frameworks and the quality of business and labor regulations.
+World Bank Enterprise Surveys (WBES): Firm-level data on employment, labor practices, constraints, innovation, and perceptions of the regulatory environment.
+World Bank Global Labor Database (GLD): Harmonized labor force surveys with employment and formality indicators.
+ILOSTAT: Labor market statistics including employment structure and informality.
+World Governance Indicators (WGI): Measures of regulatory quality and rule of law.
+World Development Indicators (WDI): Measures of macro and development indicators.
+World Bank Global Labor Database: Harmonized labor force surveys and household surveys (for within country detail)
+ILO Employment Statistics: For measures of decent work and cross-national comparisons over time.
+Worldwide Governance Indicators: For proxies of institutional quality.
+World Bank Worldwide Bureaucracy Indicators: Public-sector employment shares by gender, sector (health, education, public administration), occupation, age, and education.
+World Bank Global Labor Database: Harmonized household/labor-force surveys (female FLFP, unemployment duration, reservation wages, sectoral preferences).
+ILO Labor Force Gender Statistics: Female employment by sector and status.
+World Bank Enterprise Surveys (WBES): Skills constraints, hiring difficulty, unfilled vacancies, workforce education, sectoral patterns in female employment, firm productivity, wage offers.
+World Bank Women, Business and the Law (WBL) 2024: Country-level and indicator-level data on legal differences between women and men across the life cycle: safety, mobility, workplace, pay, marriage, parenthood, childcare, entrepreneurship, assets, and pensions, and new measures of legal implementation and experts’ opinions where available). Explore how legal gender gaps interact with real-world outcomes, including women’s employment levels, sectoral mobility, entrepreneurship, and firm growth, to uncover both the obstacles restricting women’s economic inclusion and the levers that can drive job creation and productivity at scale.
+World Bank Global Labor Database: Harmonized labor force surveys and household surveys with a labor module (female FLFP, unemployment duration, reservation wages, sectoral preferences).
+World Bank Enterprise Surveys (WBES): Skills constraints, hiring difficulty, unfilled vacancies, workforce education, sectoral patterns in female employment, firm productivity, wage offers.
+Data360: Growth & Jobs (Employment trends, informality, by sector)
+Informal employment (% of total non-agricultural employment)
+Employment by economic activity
+Percent of firms competing against unregistered or informal firms
+Wage and salaried workers, total (% of total employment) (modeled ILO estimate)
+Employment to population ratio, 15+, total (%) (modeled ILO estimate)
+Share of youth not in education, employment or training, total (% of youth population)
+GDP per capita (annual % growth)
+GDP per capita (current US$)
+ILO Employment & Informality Statistics (Employment by sector and status: formal/informal, gender, age).
+UN SDG 5: SDG Indicator Database - Goal 5: Achieve gender equality and empower all women and girls.
+Jobs & Growth structured dataset available here.
+Global Findex Digital Connectivity Tracker
+World Bank Worldwide Bureaucracy Indicators: Country-level Data (size of the public sector in the (formal) labor market, share of tertiary-educated workers employed in the public sector, as well as gender/industry/occupation-level disaggregation of the above.
+World Bank Enterprise Surveys (WBES): Firm-level Data (skills constraints, vacancies, hiring, wages, digital adoption)
+World Bank Global Labor Database: Harmonized labor force surveys and household surveys with a labor module
+Indicators for Digital Progress and Trends Report 2025: Strengthening AI Foundations
+Data360 (Labor Force Surveys):
+Employment: ICT manufacturing
+Employment: ICT services
+World Bank Global Labor Database
+WBG Global Jobs Indicators Database
+International Labor Organization
+ITU ICT Data Hub
+Global Findex Digital Connectivity Tracker
+
