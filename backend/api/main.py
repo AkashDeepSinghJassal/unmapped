@@ -80,6 +80,21 @@ class IngestRequest(BaseModel):
     countries: Optional[list[str]] = None
 
 
+class ChatMessageRequest(BaseModel):
+    session_id: str = Field(..., description="Client-generated UUID for this conversation")
+    message: str    = Field(..., description="User's message")
+    country_code: str = Field(default="GHA", description="ISO3 country code")
+
+
+class ChatMessageResponse(BaseModel):
+    reply: str
+    is_complete: bool
+    profile_id: Optional[str] = None
+    passport: Optional[dict] = None
+    opportunities: Optional[dict] = None
+    error: Optional[str] = None
+
+
 # ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
@@ -149,6 +164,66 @@ def get_dashboard(country_code: str = "GHA"):
     logger.info("Dashboard request: country=%s", country_code)
     result = run_dashboard_pipeline(country_code=country_code.upper())
     return DashboardResponse(**result)
+
+
+@app.post("/api/chat", response_model=ChatMessageResponse)
+def chat_message(req: ChatMessageRequest):
+    """
+    Conversational intake endpoint.
+    Maintains multi-turn conversation history per session_id.
+    When the chat agent has gathered enough information, it triggers the full
+    Skills + Opportunity pipeline and returns the analysis in the same response.
+    """
+    from backend.agents import chat_agent
+    from backend.orchestrator import run_profile_pipeline
+
+    logger.info("Chat message: session=%s country=%s", req.session_id, req.country_code)
+
+    chat_result = chat_agent.process_message(
+        session_id=req.session_id,
+        message=req.message,
+        country=req.country_code,
+    )
+
+    if not chat_result["is_complete"]:
+        return ChatMessageResponse(
+            reply=chat_result["reply"],
+            is_complete=False,
+        )
+
+    # Chat collected enough info — run the full pipeline
+    try:
+        pipeline_result = run_profile_pipeline(
+            education_level=chat_result["education_level"],
+            experience_text=chat_result["experience_text"],
+            country_code=req.country_code,
+        )
+        profile_id = str(uuid.uuid4())
+        _profiles[profile_id] = pipeline_result
+
+        return ChatMessageResponse(
+            reply=chat_result["reply"],
+            is_complete=True,
+            profile_id=profile_id,
+            passport=pipeline_result.get("passport", {}),
+            opportunities=pipeline_result.get("opportunities", {}),
+            error=pipeline_result.get("error"),
+        )
+    except Exception as e:
+        logger.error("Chat pipeline failed: %s", e)
+        return ChatMessageResponse(
+            reply=chat_result["reply"],
+            is_complete=True,
+            error=str(e),
+        )
+
+
+@app.delete("/api/chat/{session_id}")
+def reset_chat(session_id: str):
+    """Clear conversation history for a session (start over)."""
+    from backend.agents import chat_agent
+    chat_agent.reset_session(session_id)
+    return {"status": "cleared", "session_id": session_id}
 
 
 @app.post("/api/ingest")
