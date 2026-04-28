@@ -2,9 +2,9 @@
 
 > Closing the distance between real skills and economic opportunity in LMICs.
 > World Bank Youth Summit · HackNation 5
-Demo videos 
-tech video - https://youtu.be/EMvrc_ccMWU
-demo video - https://www.youtube.com/watch?v=D8FYljYJSU4
+
+#### tech video - https://youtu.be/EMvrc_ccMWU
+#### demo video - https://www.youtube.com/watch?v=D8FYljYJSU4
 ---
 
 ## Architecture
