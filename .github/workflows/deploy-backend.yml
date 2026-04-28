@@ -1,0 +1,73 @@
+name: Deploy Backend → Fly.io
+
+on:
+  push:
+    branches:
+      - release
+    paths:
+      - "backend/**"
+      - "config/**"
+      - "requirements.txt"
+      - "fly.toml"
+      - "run.py"
+      - ".github/workflows/deploy-backend.yml"
+
+  # Allow manual trigger from GitHub Actions UI
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Lint & smoke-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Import check (catches broken imports before deploy)
+        run: python -c "from backend.api.main import app; print('✅ App imports OK')"
+        env:
+          LLM_PROVIDER: groq
+          GROQ_API_KEY: dummy
+          DUCKDB_PATH: /tmp/test.duckdb
+          CHROMA_PATH: /tmp/chroma
+          CONFIG_DIR: ./config
+
+  deploy:
+    name: Deploy to Fly.io
+    runs-on: ubuntu-latest
+    needs: test
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy
+        run: flyctl deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Health check
+        run: |
+          sleep 15
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://unmapped-api.fly.dev/api/health)
+          if [ "$STATUS" != "200" ]; then
+            echo "❌ Health check failed (HTTP $STATUS)"
+            exit 1
+          fi
+          echo "✅ Backend healthy (HTTP $STATUS)" >> $GITHUB_STEP_SUMMARY
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
