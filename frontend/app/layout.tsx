@@ -1,11 +1,21 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Link from "next/link";
+import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "UNMAPPED — Skills Infrastructure for Youth",
   description:
     "Closing the distance between real skills and economic opportunity in LMICs",
+  icons: {
+    icon: [
+      { url: "/favicon_io/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon_io/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon_io/favicon.ico" },
+    ],
+    apple: "/favicon_io/apple-touch-icon.png",
+  },
+  manifest: "/favicon_io/site.webmanifest",
 };
 
 export default function RootLayout({
@@ -19,9 +29,14 @@ export default function RootLayout({
         <header className="border-b border-gray-800 px-6 py-4">
           <div className="max-w-6xl mx-auto flex items-center justify-between">
             <Link href="/" className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                U
-              </div>
+              <Image
+                src="/favicon_io/android-chrome-192x192.png"
+                alt="UNMAPPED logo"
+                width={32}
+                height={32}
+                className="rounded-lg"
+                priority
+              />
               <span className="font-semibold text-lg tracking-tight">UNMAPPED</span>
               <span className="text-gray-500 text-sm hidden sm:block">
                 Skills Infrastructure
