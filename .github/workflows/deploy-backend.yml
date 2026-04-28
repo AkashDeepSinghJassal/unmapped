@@ -1,4 +1,4 @@
-name: Deploy Backend → Fly.io
+name: Deploy Backend → Render
 
 on:
   push:
@@ -7,17 +7,17 @@ on:
     paths:
       - "backend/**"
       - "config/**"
+      - "scripts/**"
       - "requirements.txt"
-      - "fly.toml"
+      - "render.yaml"
       - "run.py"
       - ".github/workflows/deploy-backend.yml"
 
-  # Allow manual trigger from GitHub Actions UI
   workflow_dispatch:
 
 jobs:
   test:
-    name: Lint & smoke-test
+    name: Import smoke-test
     runs-on: ubuntu-latest
 
     steps:
@@ -33,7 +33,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Import check (catches broken imports before deploy)
+      - name: Smoke test — app imports OK
         run: python -c "from backend.api.main import app; print('✅ App imports OK')"
         env:
           LLM_PROVIDER: groq
@@ -43,31 +43,31 @@ jobs:
           CONFIG_DIR: ./config
 
   deploy:
-    name: Deploy to Fly.io
+    name: Trigger Render Deploy
     runs-on: ubuntu-latest
     needs: test
     environment: production
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install flyctl
-        uses: superfly/flyctl-actions/setup-flyctl@master
-
-      - name: Deploy
-        run: flyctl deploy --remote-only
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-
-      - name: Health check
+      - name: Trigger Render deploy hook
         run: |
-          sleep 15
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://unmapped-api.fly.dev/api/health)
-          if [ "$STATUS" != "200" ]; then
-            echo "❌ Health check failed (HTTP $STATUS)"
+          HTTP_STATUS=$(curl -s -o /tmp/render_resp.txt -w "%{http_code}" \
+            -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}")
+          cat /tmp/render_resp.txt
+          if [ "$HTTP_STATUS" != "200" ] && [ "$HTTP_STATUS" != "201" ]; then
+            echo "❌ Render deploy hook failed (HTTP $HTTP_STATUS)"
             exit 1
           fi
-          echo "✅ Backend healthy (HTTP $STATUS)" >> $GITHUB_STEP_SUMMARY
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          echo "✅ Render deploy triggered" >> $GITHUB_STEP_SUMMARY
+
+      - name: Wait and health check
+        run: |
+          echo "Waiting 90s for Render to build and start..."
+          sleep 90
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "${{ secrets.RENDER_API_URL }}/api/health")
+          if [ "$STATUS" != "200" ]; then
+            echo "❌ Health check failed (HTTP $STATUS) — deploy may still be in progress"
+            exit 1
+          fi
+          echo "✅ Backend healthy at ${{ secrets.RENDER_API_URL }}" >> $GITHUB_STEP_SUMMARY
