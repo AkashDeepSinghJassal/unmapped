@@ -115,7 +115,7 @@ export default function TalentPage() {
   const [result, setResult]       = useState<ProfileResponse | null>(null);
   const [tab, setTab]             = useState<Tab>("overview");
   const [oppFilter, setOppFilter] = useState<OppFilter>("all");
-  const [autoData, setAutoData]   = useState<{ isco_major_group: number; avg_automation_prob: number }[]>([]);
+  const [autoData, setAutoData]   = useState<{ isco_group: number; avg_automation_prob: number; label?: string }[]>([]);
   const [simSkills, setSimSkills] = useState<Record<string, boolean>>({});
 
   // Load session data
@@ -139,7 +139,7 @@ export default function TalentPage() {
   }, [result]);
 
   const radarData     = useMemo(() => deriveRadar(result?.passport?.mapped_skills ?? []), [result]);
-  const userAutoRisk  = autoData.find((r) => r.isco_major_group === result?.passport?.isco_major_group);
+  const userAutoRisk  = autoData.find((r) => r.isco_group === result?.passport?.isco_major_group);
   const risk          = riskLevel(userAutoRisk?.avg_automation_prob ?? 0);
   const filteredOpps  = (result?.opportunities?.opportunities ?? []).filter(
     (o) => oppFilter === "all" || o.type === oppFilter
@@ -153,9 +153,9 @@ export default function TalentPage() {
     : 0;
 
   const autoBarData = autoData.map((r) => ({
-    name: ISCO_LABELS[r.isco_major_group] ?? `Group ${r.isco_major_group}`,
+    name: r.label ?? ISCO_LABELS[r.isco_group] ?? `Group ${r.isco_group}`,
     risk: Math.round(r.avg_automation_prob * 100),
-    isUser: r.isco_major_group === result?.passport?.isco_major_group,
+    isUser: r.isco_group === result?.passport?.isco_major_group,
   }));
 
   if (!result) {
