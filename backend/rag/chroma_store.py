@@ -9,6 +9,17 @@ Embedding backend is selected via EMBEDDING_PROVIDER env var:
 
 import logging
 import os
+import sys
+
+# ChromaDB requires sqlite3 >= 3.35.0. Azure App Service (and many Linux distros)
+# ship an older system sqlite3. pysqlite3-binary bundles a modern version — swap
+# it in before chromadb is imported so it picks up the patched module.
+try:
+    import pysqlite3  # noqa: F401
+    sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
+except ImportError:
+    pass  # local dev / environments with a modern sqlite3 — no patch needed
+
 import chromadb
 
 logger = logging.getLogger(__name__)
@@ -80,7 +91,16 @@ def search_skills(
 
     Returns list of {uri, label, description, uri_type, skill_type, distance}.
     """
-    col = _get_chroma()
+    try:
+        col = _get_chroma()
+    except Exception as exc:
+        # Catches sqlite3 version errors (Azure App Service ships old sqlite3),
+        # missing collection, or any other ChromaDB init failure.
+        # skills_agent.py has a built-in fallback to the ESCO REST API when
+        # this function returns [], so the app continues to work.
+        logger.warning("ChromaDB unavailable (%s) — ESCO REST API fallback will be used", exc)
+        return []
+
     if col.count() == 0:
         logger.warning("ChromaDB collection is empty — run embed_esco first")
         return []
