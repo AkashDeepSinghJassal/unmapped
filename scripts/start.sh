@@ -13,4 +13,4 @@ else
 fi
 
 echo "Starting FastAPI server on port ${PORT:-8000}..."
-exec uvicorn backend.api.main:app --host 0.0.0.0 --port "${PORT:-8000}"
+exec uvicorn backend.api.main:app --host 0.0.0.0 --port "${PORT:-8000}" --workers 1

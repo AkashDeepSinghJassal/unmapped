@@ -1,5 +1,5 @@
 # ── Stage 1: dependency builder ──────────────────────────────────────────────
-FROM python:3.12-slim AS builder
+FROM python:3.13.13-slim AS builder
 
 WORKDIR /build
 
@@ -9,11 +9,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
+# Install CPU-only torch first (~300 MB vs ~2 GB for the default CUDA build).
+# sentence-transformers depends on torch; installing it from the CPU wheel index
+# before running the main requirements prevents pip from pulling CUDA torch.
 RUN pip install --upgrade pip \
+    && pip install torch --index-url https://download.pytorch.org/whl/cpu \
+       --prefix=/install --no-cache-dir \
     && pip install --prefix=/install --no-cache-dir -r requirements.txt
 
 # ── Stage 2: runtime image ────────────────────────────────────────────────────
-FROM python:3.12-slim AS runtime
+FROM python:3.13.13-slim AS runtime
 
 WORKDIR /app
 
@@ -31,13 +36,13 @@ COPY config/       ./config/
 COPY scripts/      ./scripts/
 COPY run.py        ./run.py
 
-# Copy pre-built data (DuckDB + ChromaDB + ESCO delta CSV)
-# These are committed to git; in production use a PVC mounted at /app/data
-COPY data/         ./data/
+# Bake pre-built ESCO ChromaDB embeddings into the image.
+# These are static (ESCO taxonomy doesn't change) so no need to rebuild at runtime.
+# data/*.duckdb and data/delta.csv are excluded via .dockerignore.
+COPY data/chroma   ./data/chroma
 
-# Pre-warm the sentence-transformers model into the image cache
-# so the first request doesn't trigger a download
-RUN python scripts/preload_model.py
+# DuckDB is written at runtime — ensure the directory exists.
+RUN mkdir -p /app/data
 
 # Non-root user for security
 RUN useradd -m -u 1001 appuser && chown -R appuser:appuser /app
@@ -48,4 +53,4 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"
 
-CMD ["uvicorn", "backend.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+CMD ["uvicorn", "backend.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

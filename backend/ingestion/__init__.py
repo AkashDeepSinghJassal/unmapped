@@ -18,9 +18,9 @@ logger = logging.getLogger(__name__)
 DB_PATH = os.getenv("DUCKDB_PATH", "./data/unmapped.duckdb")
 
 
-def get_db() -> duckdb.DuckDBPyConnection:
+def get_db(read_only: bool = False) -> duckdb.DuckDBPyConnection:
     os.makedirs("data", exist_ok=True)
-    return duckdb.connect(DB_PATH)
+    return duckdb.connect(DB_PATH, read_only=read_only)
 
 
 def run_all(skip_esco: bool = False, countries: list[str] | None = None):
