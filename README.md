@@ -9,19 +9,85 @@
 
 ## Architecture
 
-```
-User (Web) → Next.js Frontend → FastAPI → LangGraph Orchestrator
-                                              ├── Skills Signal Agent   ← ChromaDB (ESCO embeddings)
-                                              ├── Opportunity Agent     ← DuckDB (ILOSTAT + WDI)
-                                              └── Dashboard Agent       ← DuckDB (aggregates)
+- Offline **ingestion** loads public benchmarks and taxonomy into **DuckDB** (tabular) and **ChromaDB** (vectors).
+- Online path: **Next.js UI** talks to backend **HTTP + chat/CV helpers**.
+- **LangGraph** (LangChain-style) runs three agents **in sequence** for talent: orchestrator → **skills taxonomy** → **labour-market opportunities**.
+- **Dashboard agent** is invoked **directly** for policymaker-heavy views (bypasses the full talent chain when appropriate).
+- **Country profiles** (YAML-style config) steer behaviour without altering stored embeddings.
+- **LLMs** and **embedding models** sit behind all three agents; provider is **swappable**.
+
+```mermaid
+flowchart TB
+  subgraph users [Users]
+    U[YouthAndTalentJourneys]
+    P[PolicymakerJourneys]
+  end
+
+  subgraph ui [Presentation]
+    FE[WebApp TalentAndPolicyScreens]
+  end
+
+  subgraph svc [ApplicationBackend]
+    API[HTTPServices]
+    Aux[ChatAndCVAssist]
+    API --- Aux
+  end
+
+  subgraph ingest [DataIngestion]
+    Src[WorldBankStyleIndicators]
+    Tax[SkillsTaxonomySources]
+    Auto[AutomationExposureByOccupation]
+    Pipe[IngestPipeline]
+    Src --> Pipe
+    Tax --> Pipe
+    Auto --> Pipe
+  end
+
+  subgraph data [OperationalStores]
+    Duck[(DuckDB)]
+    Chroma[(ChromaDB)]
+    Profiles[[CountryConfigProfiles]]
+  end
+
+  Pipe --> Duck
+  Pipe --> Chroma
+
+  subgraph agents [LangGraphThreeAgentWorkflow]
+    direction TB
+    Orch[GraphOrchestrator]
+    Skill[SkillsTaxonomyAgent]
+    Opp[LabourMarketOpportunityAgent]
+    Dash[RegionalDashboardAgent]
+    Orch --> Skill --> Opp
+    API -->|profileAndSimilar| Orch
+    API -->|dashboardOnly| Dash
+  end
+
+  subgraph models [FoundationModels]
+    LM[LargeLanguageModels]
+    Vec[EmbeddingModels]
+  end
+
+  Profiles -.->|context| Orch
+  Chroma -.->|semanticMatch| Skill
+  Duck -.->|tabularSignals| Opp
+  Duck -.->|tabularSignals| Dash
+  Vec -.->|encodeExperience| Skill
+  LM -.->|reasonSummarizeRank| Skill
+  LM -.->|reasonSummarizeRank| Opp
+  LM -.->|reasonSummarizeRank| Dash
+
+  U <--> FE
+  P <--> FE
+  FE <--> API
 ```
 
-**AI model:** Gemini 2.0 Flash + Gemini Embedding 2 (Google Gen AI SDK)
+**Data → agents**
 
-**Data sources:**
-- [World Bank WDI API](https://api.worldbank.org/v2/) — HCI, GDP per worker, sector employment %
-- [Frey-Osborne (2013)](https://raw.githubusercontent.com/plotly/datasets/master/job-automation-probability.csv) — automation probability by occupation
-- [ESCO v1.2.1](https://esco.ec.europa.eu/en/use-esco/download) — skills taxonomy (13k skills)
+- **ChromaDB** → semantic match for **skills taxonomy** agent (+ embedding model for queries).
+- **DuckDB** → indicators, wages, aggregates for **opportunity** and **dashboard** agents.
+- **Profiles** → context into **orchestrator** only (talent workflow).
+- Ingestion is **batch** / admin-triggered, not per user click.
 
 ---
 
