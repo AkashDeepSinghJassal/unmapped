@@ -10,10 +10,11 @@ on:
       - "scripts/**"
       - "run.py"
       - "requirements.txt"
+      - ".github/**"
   workflow_dispatch:
 
 env:
-  PYTHON_VERSION: "3.12"
+  PYTHON_VERSION: "3.13.13"
 
 jobs:
   deploy:
