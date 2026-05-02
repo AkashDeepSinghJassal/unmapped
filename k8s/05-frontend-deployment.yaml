@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unmapped-frontend
+  namespace: unmapped
+  labels:
+    app: unmapped-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: unmapped-frontend
+  template:
+    metadata:
+      labels:
+        app: unmapped-frontend
+    spec:
+      # Tolerate spot node eviction — pod reschedules automatically
+      tolerations:
+        - key: "kubernetes.azure.com/scalesetpriority"
+          operator: "Equal"
+          value: "spot"
+          effect: "NoSchedule"
+      imagePullSecrets:
+        - name: dockerhub-secret
+      containers:
+        - name: web
+          # Image updated by CI — format: <dockerhub-username>/unmapped-frontend:<sha>
+          image: REGISTRY/unmapped-frontend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+
+          env:
+            # Points to the internal backend service inside the cluster
+            - name: NEXT_PUBLIC_API_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: unmapped-config
+                  key: NEXT_PUBLIC_API_URL
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unmapped-frontend-svc
+  namespace: unmapped
+spec:
+  selector:
+    app: unmapped-frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3000
+  type: ClusterIP

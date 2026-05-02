@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: unmapped-config
+  namespace: unmapped
+data:
+  # ── LLM ──────────────────────────────────────────────────────────────────
+  LLM_PROVIDER: "groq"
+  LLM_MODEL: "llama-3.3-70b-versatile"
+
+  # ── Embeddings ────────────────────────────────────────────────────────────
+  EMBEDDING_PROVIDER: "sentence_transformers"
+  ST_MODEL: "all-MiniLM-L6-v2"
+
+  # ── Storage paths (relative to /app inside the container) ────────────────
+  DUCKDB_PATH: "/app/data/unmapped.duckdb"
+  CHROMA_PATH: "/app/data/chroma"
+  CONFIG_DIR:  "/app/config"
+
+  # ── Frontend ──────────────────────────────────────────────────────────────
+  # Updated by CI after backend is deployed
+  NEXT_PUBLIC_API_URL: "http://unmapped-backend-svc.unmapped.svc.cluster.local:8000"

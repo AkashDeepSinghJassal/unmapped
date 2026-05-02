@@ -1,0 +1,51 @@
+# ── Stage 1: dependency builder ──────────────────────────────────────────────
+FROM python:3.12-slim AS builder
+
+WORKDIR /build
+
+# System deps for pdfplumber, sentence-transformers, chromadb
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential gcc g++ libgomp1 curl \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --upgrade pip \
+    && pip install --prefix=/install --no-cache-dir -r requirements.txt
+
+# ── Stage 2: runtime image ────────────────────────────────────────────────────
+FROM python:3.12-slim AS runtime
+
+WORKDIR /app
+
+# Runtime system libs only
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy installed packages from builder
+COPY --from=builder /install /usr/local
+
+# Copy application code
+COPY backend/      ./backend/
+COPY config/       ./config/
+COPY scripts/      ./scripts/
+COPY run.py        ./run.py
+
+# Copy pre-built data (DuckDB + ChromaDB + ESCO delta CSV)
+# These are committed to git; in production use a PVC mounted at /app/data
+COPY data/         ./data/
+
+# Pre-warm the sentence-transformers model into the image cache
+# so the first request doesn't trigger a download
+RUN python scripts/preload_model.py
+
+# Non-root user for security
+RUN useradd -m -u 1001 appuser && chown -R appuser:appuser /app
+USER appuser
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"
+
+CMD ["uvicorn", "backend.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]

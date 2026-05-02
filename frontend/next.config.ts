@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Allow the logo image from the local public folder
+  // Required for Docker / Kubernetes standalone deployment
+  output: "standalone",
+
   images: {
     unoptimized: false,
   },

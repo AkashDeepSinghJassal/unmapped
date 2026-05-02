@@ -1,0 +1,14 @@
+# Persistent Volume Claim — mounts at /app/data inside the backend pod
+# Stores DuckDB + ChromaDB across pod restarts
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: unmapped-data-pvc
+  namespace: unmapped
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: managed-csi        # Azure default; change to "standard" for minikube
+  resources:
+    requests:
+      storage: 3Gi
