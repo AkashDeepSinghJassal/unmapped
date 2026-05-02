@@ -13,9 +13,6 @@ on:
       - ".github/**"
   workflow_dispatch:
 
-env:
-  PYTHON_VERSION: "3.13.13"
-
 jobs:
   deploy:
     name: Build & Deploy to App Service
@@ -24,21 +21,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Set up Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      # Pre-download the sentence-transformers model so it is baked into the
-      # deployment package — avoids a slow first-request download on App Service.
-      - name: Pre-load sentence-transformers model
-        run: python scripts/preload_model.py
 
       # Zip only backend source — exclude frontend, git history, caches, and
       # local data files (DuckDB / Chroma live on /home/data on App Service).
