@@ -1,0 +1,73 @@
+name: Deploy Backend → Render
+
+on:
+  push:
+    branches:
+      - release
+    paths:
+      - "backend/**"
+      - "config/**"
+      - "scripts/**"
+      - "requirements.txt"
+      - "render.yaml"
+      - "run.py"
+      - ".github/workflows/deploy-backend.yml"
+
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Import smoke-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Smoke test — app imports OK
+        run: python -c "from backend.api.main import app; print('✅ App imports OK')"
+        env:
+          LLM_PROVIDER: groq
+          GROQ_API_KEY: dummy
+          DUCKDB_PATH: /tmp/test.duckdb
+          CHROMA_PATH: /tmp/chroma
+          CONFIG_DIR: ./config
+
+  deploy:
+    name: Trigger Render Deploy
+    runs-on: ubuntu-latest
+    needs: test
+    environment: production
+
+    steps:
+      - name: Trigger Render deploy hook
+        run: |
+          HTTP_STATUS=$(curl -s -o /tmp/render_resp.txt -w "%{http_code}" \
+            -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}")
+          cat /tmp/render_resp.txt
+          if [ "$HTTP_STATUS" != "200" ] && [ "$HTTP_STATUS" != "201" ]; then
+            echo "❌ Render deploy hook failed (HTTP $HTTP_STATUS)"
+            exit 1
+          fi
+          echo "✅ Render deploy triggered" >> $GITHUB_STEP_SUMMARY
+
+      - name: Wait and health check
+        run: |
+          echo "Waiting 90s for Render to build and start..."
+          sleep 90
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "${{ secrets.RENDER_API_URL }}/api/health")
+          if [ "$STATUS" != "200" ]; then
+            echo "❌ Health check failed (HTTP $STATUS) — deploy may still be in progress"
+            exit 1
+          fi
+          echo "✅ Backend healthy at ${{ secrets.RENDER_API_URL }}" >> $GITHUB_STEP_SUMMARY

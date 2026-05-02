@@ -1,0 +1,41 @@
+# Requires the NGINX ingress controller installed on the cluster.
+# On AKS: helm install ingress-nginx ingress-nginx/ingress-nginx
+#
+# Replace <YOUR_DOMAIN> with your actual domain (or the AKS ingress public IP).
+# If using IP only, set host: "" and use a path-based rule.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: unmapped-ingress
+  namespace: unmapped
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    # Uncomment to enable Let's Encrypt TLS via cert-manager:
+    # cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  # tls:
+  #   - hosts:
+  #       - unmapped.yourdomain.com
+  #     secretName: unmapped-tls
+  rules:
+    - host: unmapped.yourdomain.com      # ← replace with your domain or IP
+      http:
+        paths:
+          # Frontend — everything except /api
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: unmapped-frontend-svc
+                port:
+                  number: 80
+
+          # Backend API — proxy /api/* to FastAPI
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: unmapped-backend-svc
+                port:
+                  number: 8000

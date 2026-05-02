@@ -18,9 +18,9 @@ logger = logging.getLogger(__name__)
 DB_PATH = os.getenv("DUCKDB_PATH", "./data/unmapped.duckdb")
 
 
-def get_db() -> duckdb.DuckDBPyConnection:
+def get_db(read_only: bool = False) -> duckdb.DuckDBPyConnection:
     os.makedirs("data", exist_ok=True)
-    return duckdb.connect(DB_PATH)
+    return duckdb.connect(DB_PATH, read_only=read_only)
 
 
 def run_all(skip_esco: bool = False, countries: list[str] | None = None):
@@ -28,7 +28,7 @@ def run_all(skip_esco: bool = False, countries: list[str] | None = None):
     Run full ingestion pipeline.
     Set skip_esco=True if ESCO CSV not yet downloaded.
     """
-    from . import fetch_worldbank, fetch_data360, load_frey_osborne, embed_esco
+    from . import fetch_worldbank, fetch_data360, load_frey_osborne
 
     db = get_db()
     logger.info("=== Starting data ingestion pipeline ===")
@@ -44,6 +44,7 @@ def run_all(skip_esco: bool = False, countries: list[str] | None = None):
 
     if not skip_esco:
         logger.info("--- ESCO skills embedding ---")
+        from . import embed_esco  # imported lazily — pulls in chromadb only when needed
         embed_esco.run()
     else:
         logger.info("--- Skipping ESCO embedding (skip_esco=True) ---")

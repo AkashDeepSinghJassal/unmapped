@@ -292,11 +292,11 @@ def get_signals(country_code: str = "GHA"):
     from backend.ingestion import get_db
     from backend.ingestion.fetch_data360 import get_country_signals
 
-    db = get_db()
+    db = get_db(read_only=True)
     try:
         signals = get_country_signals(country_code.upper(), db)
     finally:
-        pass  # connection is shared/cached — don't close
+        db.close()
 
     return {"country_code": country_code.upper(), "signals": signals}
 

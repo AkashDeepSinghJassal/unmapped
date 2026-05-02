@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unmapped-backend
+  namespace: unmapped
+  labels:
+    app: unmapped-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: unmapped-backend
+  template:
+    metadata:
+      labels:
+        app: unmapped-backend
+    spec:
+      # Tolerate spot node eviction — pod reschedules automatically
+      tolerations:
+        - key: "kubernetes.azure.com/scalesetpriority"
+          operator: "Equal"
+          value: "spot"
+          effect: "NoSchedule"
+      imagePullSecrets:
+        - name: dockerhub-secret
+      containers:
+        - name: api
+          # Image updated by CI — format: <dockerhub-username>/unmapped-backend:<sha>
+          image: REGISTRY/unmapped-backend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+
+          # ── Non-secret env from ConfigMap ──────────────────────────────
+          envFrom:
+            - configMapRef:
+                name: unmapped-config
+
+          # ── Secret env vars ────────────────────────────────────────────
+          env:
+            - name: GROQ_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: unmapped-secrets
+                  key: GROQ_API_KEY
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: unmapped-secrets
+                  key: OPENAI_API_KEY
+                  optional: true
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: unmapped-secrets
+                  key: GEMINI_API_KEY
+                  optional: true
+
+          # ── Persistent data volume ─────────────────────────────────────
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+
+          # ── Health probes ──────────────────────────────────────────────
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 3
+
+          # ── Resource limits ────────────────────────────────────────────
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1.5Gi"
+              cpu: "1000m"
+
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: unmapped-data-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unmapped-backend-svc
+  namespace: unmapped
+spec:
+  selector:
+    app: unmapped-backend
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+  type: ClusterIP          # internal only — frontend talks to backend inside the cluster

@@ -22,9 +22,29 @@ Embedding backend is selected via EMBEDDING_PROVIDER env var:
 import csv
 import logging
 import os
+import sqlite3
+import sys
 import time
 from collections import defaultdict
-import chromadb
+
+logger = logging.getLogger(__name__)
+
+# ── sqlite3 compatibility shim (same as chroma_store.py) ─────────────────────
+try:
+    import pysqlite3  # noqa: F401
+    sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
+except ImportError:
+    if sqlite3.sqlite_version_info < (3, 35, 0):
+        sqlite3.sqlite_version_info = (3, 35, 0)
+        sqlite3.sqlite_version = "3.35.0"
+
+try:
+    import chromadb
+    _chromadb_ok = True
+except RuntimeError as _chroma_err:
+    logger.warning("chromadb unavailable in embed_esco (%s) — ESCO embedding skipped", _chroma_err)
+    _chromadb_ok = False
+
 import requests
 
 logger = logging.getLogger(__name__)

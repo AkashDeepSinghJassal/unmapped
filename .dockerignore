@@ -1,0 +1,33 @@
+# Git
+.git/
+.gitignore
+
+# Exclude large/mutable data files — but keep the pre-built ChromaDB embeddings
+data/*.duckdb
+data/delta.csv
+data/skills_en.csv
+
+# Frontend — separate image, not needed in backend build
+frontend/
+frontend/.next/
+frontend/node_modules/
+
+# Python runtime artifacts
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+
+# Kubernetes and deployment files
+k8s/
+.github/
+
+# Local config and secrets
+.env
+.env.*
+
+# Misc
+.DS_Store
+*.zip

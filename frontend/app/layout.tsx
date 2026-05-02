@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Link from "next/link";
 import Image from "next/image";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: "UNMAPPED — Skills Infrastructure for Youth",
@@ -60,6 +61,7 @@ export default function RootLayout({
           </div>
         </header>
         <main className="max-w-6xl mx-auto px-6 py-8">{children}</main>
+        <Analytics />
         <footer className="border-t border-gray-800 px-6 py-4 mt-16">
           <div className="max-w-6xl mx-auto flex flex-wrap gap-4 text-xs text-gray-600">
             <span>Data: ILOSTAT · World Bank WDI · Frey-Osborne (2013) · ESCO v1.2.1</span>
