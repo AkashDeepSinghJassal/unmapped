@@ -155,7 +155,7 @@ def run_profile_pipeline(
 
 def run_dashboard_pipeline(country_code: str) -> dict:
     """
-    Run the Dashboard Agent independently.
+    Run the Dashboard Agent independently. Use a config map to work agnostically
     """
     config_path = os.path.join(CONFIG_DIR, f"{country_code.lower()}.yaml")
     country_name = country_code
