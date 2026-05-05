@@ -38,7 +38,9 @@ export default function RootLayout({
                 className="rounded-lg"
                 priority
               />
-              <span className="font-semibold text-lg tracking-tight">UNMAPPED</span>
+              <span className="font-semibold text-lg tracking-tight hidden sm:inline">
+                UNMAPPED
+              </span>
               <span className="text-gray-500 text-sm hidden sm:block">
                 Skills Infrastructure
               </span>
